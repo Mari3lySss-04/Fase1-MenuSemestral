@@ -213,10 +213,10 @@ class MainActivity : ComponentActivity() {
 
                 }
 
-                }
             }
         }
     }
+}
 
 
 /*

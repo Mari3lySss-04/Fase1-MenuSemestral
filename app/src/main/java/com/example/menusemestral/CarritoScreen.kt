@@ -1,37 +1,30 @@
 package com.example.menusemestral
 
-// CarritoScreen.kt
-
 import android.util.Log
+import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import com.example.menusemestral.models.CarritoItem
-import android.widget.Toast
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.menusemestral.models.CarritoItem
 import com.google.gson.Gson
-
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-/**
-
-se ven  los productos agregados, calcular el total y confirmar la compra.
-
-Al hacer clic en "Comprar", se genera un JSON con los productos, precios y cantidades, y se envía a la API.
-
-En caso de éxito, se vacía el carrito y se muestra un mensaje.
- */
-
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CarritoScreen(
     carritoItems: List<CarritoItem>,
@@ -42,65 +35,120 @@ fun CarritoScreen(
     var total by remember { mutableStateOf(0.0) }
     total = carritoItems.sumOf { it.producto.precio * it.cantidad }
 
+    // 🎨 Paleta de colores
+    val fondoPastel = Color(0xFFFFF5BA)
+    val navBarChocolate = Color(0xFF5D4037)
+    val textoOscuro = Color(0xFF333333)
+    val verdeMenta = Color(0xFFA0E7E5)
+
     Scaffold(
+        containerColor = Color.Transparent,
         bottomBar = {
-            NavigationBar {
+            NavigationBar(containerColor = navBarChocolate) {
                 NavigationBarItem(
                     selected = false,
                     onClick = { onNavChange("home") },
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
-                    label = { Text("Inicio") }
+                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio", tint = Color.White) },
+                    label = { Text("Inicio", color = Color.White) }
                 )
                 NavigationBarItem(
                     selected = true,
                     onClick = { onNavChange("carrito") },
-                    icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Carrito") },
-                    label = { Text("Carrito") }
+                    icon = { Icon(Icons.Default.ShoppingCart, contentDescription = "Carrito", tint = Color.White) },
+                    label = { Text("Carrito", color = Color.White) }
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { onNavChange("historial") },
-                    icon = { Icon(Icons.Default.History, contentDescription = "Historial") },
-                    label = { Text("Historial") }
+                    icon = { Icon(Icons.Default.History, contentDescription = "Historial", tint = Color.White) },
+                    label = { Text("Historial", color = Color.White) }
                 )
                 NavigationBarItem(
                     selected = false,
                     onClick = { onNavChange("perfil") },
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil") },
-                    label = { Text("Perfil") }
+                    icon = { Icon(Icons.Default.Person, contentDescription = "Perfil", tint = Color.White) },
+                    label = { Text("Perfil", color = Color.White) }
                 )
             }
         }
     ) { paddingValues ->
         Column(
             modifier = Modifier
+                .fillMaxSize()
+                .background(fondoPastel)
                 .padding(paddingValues)
                 .padding(16.dp)
-                .fillMaxSize()
         ) {
-            Column(Modifier.fillMaxSize().padding(16.dp)) {
-                LazyColumn {
-                    items(carritoItems) { item ->
-                        Row(
-                            Modifier
+            // 🔹 Título de la pantalla
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Carrito",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = textoOscuro
+                )
+            }
+
+
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(carritoItems) { item ->
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color.White),
+                        elevation = CardDefaults.cardElevation(4.dp)
+                    ) {
+                        Column(
+                            modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(vertical = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween
+                                .padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(6.dp)
                         ) {
-                            Text(item.producto.nombre)
-                            Text("x${item.cantidad}")
-                            Text("$${item.producto.precio * item.cantidad}")
+                            Text(
+                                text = item.producto.nombre,
+                                color = textoOscuro,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            Divider(color = Color(0xFFEEEEEE), thickness = 1.dp)
+                            Text(
+                                text = "Cantidad: ${item.cantidad}",
+                                color = textoOscuro,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                            Text(
+                                text = "Subtotal: $${"%.2f".format(item.producto.precio * item.cantidad)}",
+                                color = textoOscuro,
+                                style = MaterialTheme.typography.bodyMedium
+                            )
                         }
                     }
                 }
+            }
 
-                Spacer(Modifier.height(16.dp))
-                Text("Total: $${"%.2f".format(total)}", style = MaterialTheme.typography.titleMedium)
-                Spacer(Modifier.height(8.dp))
-                Button(onClick = {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                "Total: $${"%.2f".format(total)}",
+                style = MaterialTheme.typography.titleMedium,
+                color = textoOscuro
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Button(
+                onClick = {
                     val token = SessionManager.fetchToken(context).let { if (it.isNotEmpty()) "Bearer $it" else "" }
                     val totalCompra = carritoItems.sumOf { it.producto.precio * it.cantidad }
-
 
                     val compraData = mapOf(
                         "total" to totalCompra,
@@ -115,51 +163,37 @@ fun CarritoScreen(
 
                     val json = Gson().toJson(compraData)
                     Log.d("DEBUG_COMPRAR", "JSON que se envía: $json")
+
                     RetrofitInstance.api.realizarCompra(token, compraData)
                         .enqueue(object : Callback<Map<String, Any>> {
-
-                        override fun onResponse(call: Call<Map<String, Any>>, response: Response<Map<String, Any>>) {
-                            val raw = response.errorBody()?.string() ?: response.body().toString()
-                            Log.d("DEBUG_COMPRAR", "Response: $raw")
-                            Log.d("DEBUG_COMPRAR", "Compra data: $compraData")
-
-
-                            if (response.isSuccessful && response.body()?.get("success") == true) {
-                                onClearCart()
-                                Toast.makeText(context, "Compra realizada con éxito", Toast.LENGTH_SHORT).show()
-                            } else {
-                                Toast.makeText(context, "Error al realizar la compra", Toast.LENGTH_SHORT).show()
+                            override fun onResponse(
+                                call: Call<Map<String, Any>>,
+                                response: Response<Map<String, Any>>
+                            ) {
+                                val raw = response.errorBody()?.string() ?: response.body().toString()
+                                Log.d("DEBUG_COMPRAR", "Response: $raw")
+                                if (response.isSuccessful && response.body()?.get("success") == true) {
+                                    onClearCart()
+                                    Toast.makeText(context, "Compra realizada con éxito", Toast.LENGTH_SHORT).show()
+                                } else {
+                                    Toast.makeText(context, "Error al realizar la compra", Toast.LENGTH_SHORT).show()
+                                }
                             }
-                        }
 
-
-                        override fun onFailure(call: Call<Map<String, Any>>, t: Throwable) {
-
-                            Toast.makeText(context, "Error de carrito: ${t.message}", Toast.LENGTH_SHORT).show()
-
-                        }
-                    })
-                }, Modifier.fillMaxWidth()) {
-                    Text("Comprar")
-                }
-
+                            override fun onFailure(call: Call<Map<String, Any>>, t: Throwable) {
+                                Toast.makeText(context, "Error: ${t.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        })
+                },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = verdeMenta,
+                    contentColor = textoOscuro
+                )
+            ) {
+                Text("Comprar")
             }
         }
     }
-
-
-
-
-
-
 }
-/**
-
-
-
-Muestra los productos agregados al carrito en una lista vertical. Calcula el total de la compra y realiza la operación de compra enviando los datos a través de Retrofit.
-
-Usa el token del usuario para autorizar la operación.
-
-También permite navegar entre otras secciones mediante la barra de navegación inferior.
- */

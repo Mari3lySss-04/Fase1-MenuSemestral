@@ -9,7 +9,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 
 object Constantes {
-    const val BASE_IP = "192.168.0.12" //cambien aca su ip, recuerden que cambia con el wifi
+    const val BASE_IP = "10.96.37.192" //cambien aca su ip, recuerden que cambia con el wifi
     const val BASE_URL = "http://$BASE_IP/MenuSemestral/MenuSemestral/"
 }
 
